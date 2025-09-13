@@ -31,7 +31,7 @@
         {{-- ======================================================= --}}
         {{-- FORM CHECKOUT UTAMA (KOLOM KIRI) --}}
         {{-- ======================================================= --}}
-        <form action="{{ route('checkout.store') }}" method="POST" enctype="multipart/form-data" class="lg:col-span-3">
+<form id="checkout-form" action="{{ route('checkout.store') }}" method="POST" enctype="multipart/form-data" class="lg:col-span-3">
             @csrf
             <div class="bg-white p-8 rounded-lg shadow-md">
                 <h2 class="text-2xl font-semibold mb-6">Informasi Pengiriman</h2>
@@ -124,20 +124,3 @@
 </div>
 @endsection
 
-{{-- Kita perlu sedikit Javascript untuk membuat tombol submit di kolom kanan bisa men-trigger form di kolom kiri --}}
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const mainForm = document.querySelector('form[action="{{ route('checkout.store') }}"]');
-        const submitButton = document.querySelector('button[type="submit"][form="checkout-form"]');
-
-        if (mainForm && submitButton) {
-            // Beri ID pada form utama agar bisa ditarget
-            mainForm.id = 'checkout-form';
-
-            // Tombol submit sekarang akan secara eksplisit men-trigger form dengan ID 'checkout-form'
-            // Atribut 'form="checkout-form"' pada tombol sudah menangani ini.
-        }
-    });
-</script>
-@endpush

@@ -8,18 +8,12 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    /**
-     * Menampilkan halaman keranjang belanja.
-     */
     public function index()
     {
         $cart = session()->get('cart', []);
         return view('cart.index', compact('cart'));
     }
 
-    /**
-     * Menambahkan item ke keranjang.
-     */
     public function add(Request $request, Product $product)
     {
         $validated = $request->validate([
@@ -31,89 +25,94 @@ class CartController extends Controller
         $quantity = $validated['quantity'];
 
         if ($variant->product_id !== $product->id) {
-            return redirect()->back()->with('error', 'Varian tidak valid untuk produk ini.');
+            return redirect()->back()->with('error', 'Varian tidak valid.');
         }
 
         $cart = session()->get('cart', []);
         $cartKey = $variant->id;
 
-        $currentQuantityInCart = $cart[$cartKey]['quantity'] ?? 0;
-        $newTotalQuantity = $currentQuantityInCart + $quantity;
+        // Cek stok
+        $currentQty = $cart[$cartKey]['quantity'] ?? 0;
+        $newQty = $currentQty + $quantity;
 
-        if ($variant->stock < $newTotalQuantity) {
-            return redirect()->back()->with('error', 'Stok untuk ukuran ini tidak mencukupi. Sisa stok: ' . $variant->stock);
+        if ($variant->stock < $newQty) {
+            return redirect()->back()->with('error', 'Stok tidak mencukupi. Sisa: ' . $variant->stock);
         }
 
+        // Tambahkan ke cart
         $cart[$cartKey] = [
             "product_name" => $product->name,
             "variant_id" => $variant->id,
             "size" => $variant->size,
-            "quantity" => $newTotalQuantity,
+            "quantity" => $newQty,
             "price" => $product->price,
             "image" => $product->image
         ];
         
         session()->put('cart', $cart);
-
-        return redirect()->route('cart.index')->with('success', 'Produk berhasil ditambahkan ke keranjang.');
+        return redirect()->route('cart.index')->with('success', 'Produk ditambahkan ke keranjang.');
     }
 
-    /**
-     * Menghapus item dari keranjang.
-     */
     public function remove($variantId)
     {
-        $cart = session()->get('cart');
-
-        if (isset($cart[$variantId])) {
-            unset($cart[$variantId]);
-            session()->put('cart', $cart);
-            // Ubah link hapus di view menjadi tombol form dengan method POST jika ingin lebih aman,
-            // tapi untuk sekarang link GET tidak masalah.
-            return redirect()->route('cart.index')->with('success', 'Produk berhasil dihapus dari keranjang.');
-        }
-        return redirect()->route('cart.index')->with('error', 'Produk tidak ditemukan di keranjang.');
+        $cart = session()->get('cart', []);
+        unset($cart[$variantId]);
+        session()->put('cart', $cart);
+        
+        return redirect()->route('cart.index')->with('success', 'Produk dihapus dari keranjang.');
     }
 
-    /**
-     * Mengupdate semua jumlah di keranjang lalu redirect ke checkout.
-     * Ini menggantikan fungsi update() yang lama.
-     */
+    // HANYA ini yang diperlukan untuk update quantity
     public function updateAndCheckout(Request $request)
     {
         $quantities = $request->input('quantities', []);
         $cart = session()->get('cart', []);
-        $errorMessages = [];
+        $errors = [];
 
         foreach ($quantities as $variantId => $quantity) {
             if (isset($cart[$variantId])) {
-                // Pastikan kuantitas valid (minimal 1)
-                $quantity = max(1, (int)$quantity);
-
-                $variant = ProductVariant::find($variantId);
+                $quantity = max(1, (int)$quantity); // minimal 1
+                
                 // Cek stok
-                if ($variant && $variant->stock < $quantity) {
-                    $originalQuantity = $cart[$variantId]['quantity'];
-                    // Batasi ke jumlah stok maksimum
+                $variant = ProductVariant::find($variantId);
+                if (!$variant) {
+                    unset($cart[$variantId]);
+                    $errors[] = "Produk {$cart[$variantId]['product_name']} sudah tidak tersedia.";
+                    continue;
+                }
+
+                if ($variant->stock < $quantity) {
                     $cart[$variantId]['quantity'] = $variant->stock;
-                    // Kumpulkan pesan error untuk ditampilkan
-                    $errorMessages[] = 'Stok untuk ' . $cart[$variantId]['product_name'] . ' (Ukuran: ' . $cart[$variantId]['size'] . ') tidak mencukupi, jumlah disesuaikan dari ' . $originalQuantity . ' menjadi ' . $variant->stock . '.';
+                    $errors[] = "Stok {$cart[$variantId]['product_name']} tidak mencukupi. Disesuaikan menjadi {$variant->stock}.";
                 } else {
-                     // Update jumlah di keranjang jika stok aman
                     $cart[$variantId]['quantity'] = $quantity;
                 }
             }
         }
 
-        // Simpan keranjang yang sudah di-update ke session
         session()->put('cart', $cart);
 
-        // Jika ada pesan error, redirect kembali ke keranjang untuk menampilkannya
-        if (!empty($errorMessages)) {
-            return redirect()->route('cart.index')->with('error', implode("\n", $errorMessages));
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->with('error', 'Keranjang kosong.');
         }
 
-        // Jika semua aman, arahkan ke halaman checkout
+        if (!empty($errors)) {
+            return redirect()->route('cart.index')->with('error', implode(' ', $errors));
+        }
+
         return redirect()->route('checkout.create');
+    }
+
+    public function clear()
+    {
+        session()->forget('cart');
+        return redirect()->route('cart.index')->with('success', 'Keranjang dikosongkan.');
+    }
+
+    public function getCartCount()
+    {
+        $cart = session()->get('cart', []);
+        $count = array_sum(array_column($cart, 'quantity'));
+        return response()->json(['count' => $count]);
     }
 }

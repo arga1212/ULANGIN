@@ -1,73 +1,144 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8">Keranjang Belanja</h1>
+<div class="bg-gray-50 min-h-screen py-10">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl md:text-4xl font-extrabold mb-10 text-center text-gray-800 tracking-tight">
+            🛒 Keranjang Belanja
+        </h1>
 
-    {{-- Notifikasi --}}
-    @if (session('success')) <div class="bg-green-100 ... mb-6">{{ session('success') }}</div> @endif
-    @if (session('error')) <div class="bg-red-100 ... mb-6">{{ session('error') }}</div> @endif
+        @if (session('success'))
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg shadow-sm">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg shadow-sm">
+                {{ session('error') }}
+            </div>
+        @endif
 
-    @if (!empty($cart))
-        {{-- FORM UTAMA SEKARANG MEMBUNGKUS SELURUH TABEL --}}
-        <form action="{{ route('cart.updateAndCheckout') }}" method="POST">
-            @csrf
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full leading-normal">
-                        <thead>
-                            <tr>
-                                <th class="px-5 py-3 border-b-2 text-left">Produk</th>
-                                <th class="px-5 py-3 border-b-2 text-left">Harga</th>
-                                <th class="px-5 py-3 border-b-2 text-left">Jumlah</th>
-                                <th class="px-5 py-3 border-b-2 text-left">Subtotal</th>
-                                <th class="px-5 py-3 border-b-2"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php $totalPrice = 0; @endphp
+        @if (!empty($cart))
+            <form action="{{ route('cart.updateAndCheckout') }}" method="POST">
+                @csrf
+                <div class="flex flex-col lg:flex-row gap-8">
+                    
+                    <!-- Daftar Item Keranjang -->
+                    <div class="lg:w-2/3">
+                        <div class="bg-white rounded-2xl shadow-lg p-6 divide-y divide-gray-200">
                             @foreach ($cart as $variantId => $details)
-                                @php $subtotal = $details['price'] * $details['quantity']; $totalPrice += $subtotal; @endphp
-                                <tr>
-                                    <td class="px-5 py-5 border-b">
-                                        <div class="flex items-center">
-                                            <img class="w-20 h-20 object-cover rounded mr-4" src="{{ asset('storage/' . $details['image']) }}">
-                                            <div>
-                                                <p class="font-semibold">{{ $details['product_name'] }}</p>
-                                                <p class="text-sm text-gray-500">Ukuran: {{ $details['size'] }}</p>
-                                            </div>
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-6 gap-4">
+                                    
+                                    <!-- Gambar Produk -->
+                                    <div class="flex items-center gap-4 flex-1">
+                                        <img class="w-20 h-20 object-cover rounded-lg shadow-sm border" 
+                                             src="{{ asset('storage/' . $details['image']) }}" 
+                                             alt="{{ $details['product_name'] }}">
+                                        
+                                        <div>
+                                            <h3 class="font-semibold text-lg text-gray-800">{{ $details['product_name'] }}</h3>
+                                            <p class="text-sm text-gray-500">Ukuran: {{ $details['size'] }}</p>
+                                            <p class="text-sm text-gray-600 font-medium">
+                                                Rp {{ number_format($details['price']) }}
+                                            </p>
                                         </div>
-                                    </td>
-                                    <td class="px-5 py-5 border-b">Rp {{ number_format($details['price']) }}</td>
-                                    <td class="px-5 py-5 border-b">
-                                        {{-- Input jumlah sekarang menjadi bagian dari array --}}
-                                        <input type="number" name="quantities[{{ $variantId }}]" value="{{ $details['quantity'] }}" min="1" class="w-20 border rounded text-center">
-                                    </td>
-                                    <td class="px-5 py-5 border-b">Rp {{ number_format($subtotal) }}</td>
-                                    <td class="px-5 py-5 border-b">
-<form action="{{ route('cart.remove', $variantId) }}" method="POST">
-    @csrf
-    <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
-</form>                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+                                    
+                                    <!-- Kontrol jumlah & subtotal -->
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:gap-6 w-full sm:w-auto justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <label class="text-sm text-gray-600">Jumlah:</label>
+                                            @php $variant = \App\Models\ProductVariant::find($variantId); @endphp
+                                            <input type="number" 
+                                                name="quantities[{{ $variantId }}]" 
+                                                value="{{ $details['quantity'] }}" 
+                                                min="1" 
+                                                max="{{ $variant->stock ?? 999 }}" 
+                                                class="w-20 px-3 py-2 border rounded-lg text-center focus:ring-2 focus:ring-black focus:outline-none"
+                                                data-price="{{ $details['price'] }}"
+                                                onchange="updateSubtotal({{ $variantId }}, this)">
+                                        </div>
+                                        
+                                        <div class="text-right mt-3 sm:mt-0">
+                                            <p class="font-bold text-gray-800 text-lg" id="subtotal-{{ $variantId }}">
+                                                Rp {{ number_format($details['price'] * $details['quantity']) }}
+                                            </p>
+                                        </div>
+                                    </div>
 
-                <div class="text-right mt-8">
-                    <p class="text-2xl font-bold">Total: Rp {{ number_format($totalPrice) }}</p>
-                    {{-- TOMBOL INI SEKARANG MEN-SUBMIT FORM --}}
-                    <button type="submit" class="mt-4 inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded">
-                        Lanjut ke Checkout
-                    </button>
+                                    <!-- Tombol hapus -->
+                                    <a href="{{ route('cart.remove', $variantId) }}" 
+                                       class="text-red-500 hover:text-red-700 text-sm font-medium transition">
+                                        Hapus
+                                    </a>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Ringkasan & Checkout -->
+                    <div class="lg:w-1/3">
+                        <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+                            <h2 class="text-xl font-bold mb-6 text-gray-800">Ringkasan Belanja</h2>
+                            
+                            @php $totalPrice = 0; @endphp
+                            @foreach ($cart as $details) 
+                                @php $totalPrice += $details['price'] * $details['quantity']; @endphp 
+                            @endforeach
+                            
+                            <div class="flex justify-between items-center text-2xl font-extrabold mb-8 text-gray-900">
+                                <span>Total</span>
+                                <span id="total-price">Rp {{ number_format($totalPrice) }}</span>
+                            </div>
+                            
+                            <button type="submit" 
+                                    class="w-full bg-gradient-to-r from-black to-gray-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:opacity-90 transition mb-4">
+                                Lanjut ke Checkout
+                            </button>
+                            
+                            <a href="{{ route('shop.index') }}" 
+                               class="w-full block text-center bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-xl hover:bg-gray-200 transition">
+                                Lanjut Belanja
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        @else
+            <div class="text-center py-20">
+                <div class="bg-white rounded-2xl shadow-lg p-12 max-w-md mx-auto">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Keranjang Belanja Kosong</h2>
+                    <p class="text-gray-600 mb-8">Anda belum menambahkan produk apapun.</p>
+                    <a href="{{ route('shop.index') }}" 
+                       class="inline-flex items-center px-6 py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 shadow-md transition">
+                        Mulai Belanja
+                    </a>
                 </div>
             </div>
-        </form>
-    @else
-        <div class="text-center bg-white p-10 rounded-lg shadow-md">
-            {{-- ... (bagian keranjang kosong tidak berubah) ... --}}
-        </div>
-    @endif
+        @endif
+    </div>
 </div>
+
+<script>
+function updateSubtotal(variantId, input) {
+    const price = parseFloat(input.dataset.price);
+    const quantity = parseInt(input.value) || 0;
+    const subtotal = price * quantity;
+
+    // Update subtotal per item
+    document.getElementById('subtotal-' + variantId).textContent = 
+        'Rp ' + subtotal.toLocaleString('id-ID');
+
+    // Update total semua item
+    let grandTotal = 0;
+    document.querySelectorAll('input[name^="quantities"]').forEach(input => {
+        const qty = parseInt(input.value) || 0;
+        const itemPrice = parseFloat(input.dataset.price) || 0;
+        grandTotal += qty * itemPrice;
+    });
+
+    document.getElementById('total-price').textContent = 
+        'Rp ' + grandTotal.toLocaleString('id-ID');
+}
+</script>
 @endsection

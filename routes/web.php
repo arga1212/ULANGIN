@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
     // Rute Keranjang Belanja
     Route::get('cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
-    Route::post('cart/remove/{variantId}', [CartController::class, 'remove'])->name('cart.remove'); 
+    Route::get('cart/remove/{variantId}', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('cart/update-and-checkout', [CartController::class, 'updateAndCheckout'])->name('cart.updateAndCheckout');
     
     // Rute Proses Checkout dan Voucher
@@ -59,6 +59,11 @@ Route::middleware('auth')->group(function () {
     Route::post('checkout/now', [CheckoutController::class, 'buyNow'])->name('checkout.buyNow');
     Route::post('voucher/apply', [CheckoutController::class, 'applyVoucher'])->name('voucher.apply');
     Route::post('voucher/remove', [CheckoutController::class, 'removeVoucher'])->name('voucher.remove');
+    // Pastikan routenya seperti ini:
+Route::post('/cart/update-checkout', [CartController::class, 'updateAndCheckout'])->name('cart.updateAndCheckout');
+Route::get('/cart/remove/{variantId}', [CartController::class, 'remove'])->name('cart.remove');
+
+
 });
 
 
