@@ -360,13 +360,15 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-4xl font-bold mb-6">Siap Mulai Rework Journey-mu?</h2>
             <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-                Bergabunglah dengan ribuan orang yang sudah merasakan pengalaman fashion berkelanjutan bersama kami
-            </p>
+Rework your clothes, refresh your style. <br>
+ULANGIN — where old threads become new stories            
+</p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="#BiggestRating" class="cta-btn primary">
-                    Mulai Sekarang
-                    <i class="fas fa-arrow-right ml-2"></i>
-                </a>
+                <a href="https://wa.me/6285136844527?text=Halo%20kak%20saya%20mau%20tanya%20tentang%20produk%20ULANGIN" 
+                target="_blank" class="cta-btn primary">
+                Mulai Sekarang
+             <i class="fas fa-arrow-right ml-2"></i>
+            </a>
             </div>
         </div>
     </section>
