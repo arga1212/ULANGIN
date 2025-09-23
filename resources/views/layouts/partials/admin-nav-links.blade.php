@@ -22,3 +22,9 @@
     <span class="nav-icon mr-4 {{ request()->routeIs('admin.vouchers.*') ? 'text-black' : 'text-gray-400' }}"><i class="fas fa-ticket-alt"></i></span>
     <span class="font-medium">Voucher</span>
 </a>
+
+<a href="{{ route('admin.invoices.create') }}" 
+   class="nav-link {{ request()->routeIs('admin.invoices.create') ? 'active bg-gray-100 text-black' : 'text-gray-600 hover:bg-gray-50' }} group flex items-center px-4 py-3 text-sm font-medium rounded-xl">
+    <span class="nav-icon mr-4 {{ request()->routeIs('admin.invoices.create') ? 'text-black' : 'text-gray-400' }}"><i class="fas fa-file-invoice-dollar"></i></span>
+    <span class="font-medium">Buat Invoice</span>
+</a>

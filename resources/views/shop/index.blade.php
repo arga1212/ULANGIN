@@ -47,7 +47,7 @@
                     @foreach($products as $product)
                     <a href="{{ route('shop.show', $product) }}" class="bg-white rounded-xl shadow-md overflow-hidden group transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                         <div class="relative">
-                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-48 w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300">
+                            <img src="{{ asset('storage/' . $product->thumbnail) }}" alt="{{ $product->name }}" class="h-48 w-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300">
                         </div>
                         <div class="p-4">
                             <h3 class="font-semibold text-gray-900 truncate" title="{{ $product->name }}">{{ $product->name }}</h3>

@@ -42,7 +42,7 @@ class ShopController extends Controller
     public function show(Product $product)
     {
         // Muat relasi varian dan kategori agar bisa diakses di view
-        $product->load('variants', 'category');
+        $product->load('variants', 'category', 'ratings.user', 'images');
         
         return view('shop.show', compact('product'));
     }

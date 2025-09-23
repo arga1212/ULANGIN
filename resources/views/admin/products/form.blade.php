@@ -89,15 +89,42 @@
         <!-- Kolom Kanan: Gambar & Aksi -->
         <div class="space-y-8">
             <!-- Kartu Gambar Produk -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100">
-                <div class="p-6 border-b"><h2 class="text-xl font-semibold text-gray-800">Gambar Produk</h2></div>
-                <div class="p-6">
-                    <input type="file" name="image" id="image" class="w-full border-gray-300 rounded-md shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800">
-                    @if (isset($product) && $product->image)
-                        <img src="{{ asset('storage/' . $product->image) }}" alt="Current Image" class="mt-4 w-full h-auto object-cover rounded-lg">
-                    @endif
+           <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+    <div class="p-6 border-b"><h2 class="text-xl font-semibold text-gray-800">Gambar Produk</h2></div>
+    <div class="p-6 space-y-4">
+        {{-- --- INPUT BARU UNTUK THUMBNAIL --- --}}
+        <div>
+            <label class="text-sm font-medium">Gambar Utama (Thumbnail)</label>
+            <input type="file" name="thumbnail" class="mt-1 w-full ...">
+            @if (isset($product) && $product->thumbnail)
+                <img src="{{ asset('storage/' . $product->thumbnail) }}" alt="Current Thumbnail" class="mt-4 w-32 h-32 object-cover rounded-lg">
+            @endif
+        </div>
+        
+        <hr>
+
+        {{-- --- INPUT BARU UNTUK GAMBAR GALERI --- --}}
+        <div>
+            <label class="text-sm font-medium">Gambar Galeri (Bisa pilih banyak)</label>
+            <input type="file" name="gallery_images[]" multiple class="mt-1 w-full ...">
+        </div>
+
+        {{-- Tampilkan gambar galeri yang sudah ada --}}
+        @if (isset($product) && $product->images->isNotEmpty())
+            <div class="mt-4">
+                <p class="text-sm font-medium mb-2">Gambar Galeri Saat Ini:</p>
+                <div class="grid grid-cols-3 gap-4">
+                    @foreach ($product->images as $image)
+                        <div class="relative">
+                            <img src="{{ asset('storage/' . $image->path) }}" class="w-full h-24 object-cover rounded-lg">
+                            {{-- Tambahkan tombol hapus jika diperlukan --}}
+                        </div>
+                    @endforeach
                 </div>
             </div>
+        @endif
+    </div>
+</div>
 
             <!-- Kartu Aksi Simpan -->
             <div class="bg-white rounded-xl shadow-lg border border-gray-100">

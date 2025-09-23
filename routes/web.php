@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\DashboardController; // <-- TAMBAHKAN INI
 use App\Http\Controllers\Admin\VoucherController as AdminVoucherController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ManualInvoiceController;
+use App\Http\Controllers\ProductRatingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,8 +64,11 @@ Route::middleware('auth')->group(function () {
     // Pastikan routenya seperti ini:
 Route::post('/cart/update-checkout', [CartController::class, 'updateAndCheckout'])->name('cart.updateAndCheckout');
 Route::get('/cart/remove/{variantId}', [CartController::class, 'remove'])->name('cart.remove');
+Route::patch('/my-orders/{order}/confirm', [OrderController::class, 'confirm'])->name('my-orders.confirm');
+Route::get('/my-orders/{order}/invoice', [OrderController::class, 'downloadInvoice'])->name('my-orders.invoice');
 
-
+Route::get('/ratings/create/{order_item}', [ProductRatingController::class, 'create'])->name('ratings.create');
+Route::post('/ratings', [ProductRatingController::class, 'store'])->name('ratings.store');
 });
 
 
@@ -74,6 +79,10 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');    Route::resource('products', ProductController::class);
     Route::resource('orders', AdminOrderController::class)->only(['index', 'show', 'update']);
     Route::resource('vouchers', AdminVoucherController::class);
+    // Halaman untuk menampilkan form invoice
+Route::get('invoices/create', [ManualInvoiceController::class, 'create'])->name('invoices.create');
+// Halaman untuk memproses form dan generate PDF
+Route::post('invoices', [ManualInvoiceController::class, 'store'])->name('invoices.store');
 });
 
 
