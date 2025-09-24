@@ -21,8 +21,13 @@ jobs:
           npm ci
           npm run build
 
+      - name: Deploy to /var/www/toko-baju
+        run: |
+          rsync -a --delete --exclude=".git" --exclude=".github" ./ /var/www/toko-baju/
+
       - name: Run Laravel commands
         run: |
+          cd /var/www/toko-baju
           php artisan migrate --force
           php artisan config:clear
           php artisan cache:clear
