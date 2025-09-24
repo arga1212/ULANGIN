@@ -1,4 +1,4 @@
-name: Deploy Laravel with Self-Hosted Runner CI/CD
+name: Deploy Laravel with Docker
 
 on:
   push:
@@ -13,34 +13,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install PHP dependencies
-        run: composer install --no-dev --optimize-autoloader
-
-      - name: Install Node dependencies & Build assets
+      - name: Deploy with Docker
         run: |
-          npm ci
-          npm run build
+          cd /var/www/ulangin
+          docker compose pull
+          docker compose up -d --build
 
-      - name: Deploy to /var/www/toko-baju
+      - name: Run migrations
         run: |
-          rsync -a --delete --exclude=".git" --exclude=".github" ./ /var/www/toko-baju/
-
-      - name: Run Laravel commands
-        run: |
-          cd /var/www/toko-baju
-          php artisan migrate --force
-          php artisan config:clear
-          php artisan cache:clear
-          php artisan route:clear
-          php artisan view:clear
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
-
-      - name: Set permissions
-        run: |
-          sudo chown -R www-data:www-data /var/www/toko-baju
-          sudo chmod -R 775 /var/www/toko-baju/storage /var/www/toko-baju/bootstrap/cache
-
-      - name: Restart PHP-FPM
-        run: sudo systemctl reload php8.2-fpm
+          cd /var/www/ulangin
+          docker compose exec -T laravel php artisan migrate --force
