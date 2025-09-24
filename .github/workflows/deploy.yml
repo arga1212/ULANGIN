@@ -1,4 +1,4 @@
-name: Deploy Laravel with Docker
+name: Deploy Laravel with Docker (Self-Hosted)
 
 on:
   push:
@@ -13,13 +13,26 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Deploy with Docker
+      - name: Set up PHP dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Set up Node & build assets
         run: |
-          cd /var/www/ulangin
-          docker compose pull
+          npm ci
+          npm run build
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker compose down
           docker compose up -d --build
 
-      - name: Run migrations
+      - name: Run Laravel optimizations inside container
         run: |
-          cd /var/www/ulangin
-          docker compose exec -T laravel php artisan migrate --force
+          docker compose exec -T app php artisan migrate --force
+          docker compose exec -T app php artisan config:clear
+          docker compose exec -T app php artisan cache:clear
+          docker compose exec -T app php artisan route:clear
+          docker compose exec -T app php artisan view:clear
+          docker compose exec -T app php artisan config:cache
+          docker compose exec -T app php artisan route:cache
+          docker compose exec -T app php artisan view:cache
