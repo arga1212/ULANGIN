@@ -20,7 +20,7 @@ class Product extends Model
         'price',
         'stock',
         'category_id',
-        'image',
+        'thumbnail',
     ];
     public function variants()
 {
@@ -32,6 +32,15 @@ public function category()
     return $this->belongsTo(Category::class);
 }
 
+ public function ratings()
+    {
+        return $this->hasMany(ProductRating::class);
+    }
+
+    public function images()
+{
+    return $this->hasMany(ProductImage::class);
+}
 // Accessor: Untuk mendapatkan total stok dari semua varian
 public function getTotalStockAttribute()
 {

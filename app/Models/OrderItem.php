@@ -24,5 +24,10 @@ class OrderItem extends Model
     public function variant()
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
+        
+    }
+     public function rating()
+    {
+        return $this->hasOne(ProductRating::class);
     }
 }

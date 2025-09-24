@@ -1,125 +1,233 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-12 bg-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <!-- Tombol Kembali -->
-        <div class="mb-6">
-            <a href="{{ route('shop.index') }}" class="inline-flex items-center gap-2 text-gray-500 hover:text-black transition-colors">
-                <i class="fas fa-arrow-left"></i>
-                <span>Kembali ke Toko</span>
+<div class="min-h-screen bg-white">
+    <!-- Back Navigation -->
+    <div class="border-b border-gray-100">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <a href="{{ url()->previous() }}" class="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors text-sm font-medium">
+                <i class="fas fa-arrow-left text-xs"></i>
+                <span>Kembali</span>
             </a>
         </div>
+    </div>
 
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2" x-data="{ 
-                    selectedVariantId: null, 
-                    selectedStock: null, 
-                    quantity: 1,
-                    validateQuantity() {
-                        if (isNaN(this.quantity) || this.quantity < 1) { this.quantity = 1; }
-                        if (this.selectedStock !== null && this.quantity > this.selectedStock) { this.quantity = this.selectedStock; }
-                    }
-                }">
-                <!-- Kolom Gambar -->
-                <div class="p-4 sm:p-6">
-                    <div class="aspect-w-1 aspect-h-1">
-                        <img id="mainImage" src="{{ asset('storage/' . $product->image) }}" 
-                             alt="{{ $product->name }}" 
-                             class="w-full h-full object-cover rounded-lg shadow-md">
+    <!-- Main Product Section -->
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            
+            <!-- Product Images -->
+            <div class="space-y-4" x-data="{ mainImage: '{{ asset('storage/' . $product->thumbnail) }}' }">
+                <!-- Main Image -->
+                <div class="aspect-square bg-gray-50 rounded-2xl overflow-hidden">
+                    <img :src="mainImage" alt="{{ $product->name }}" 
+                         class="w-full h-full object-cover transition-all duration-300">
+                </div>
+
+                <!-- Image Thumbnails -->
+                <div class="grid grid-cols-5 gap-3">
+                    <!-- Main thumbnail -->
+                    <button @click="mainImage = '{{ asset('storage/' . $product->thumbnail) }}'" 
+                            class="aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200"
+                            :class="mainImage === '{{ asset('storage/' . $product->thumbnail) }}' ? 'border-black' : 'border-gray-200 hover:border-gray-400'">
+                        <img src="{{ asset('storage/' . $product->thumbnail) }}" 
+                             class="w-full h-full object-cover">
+                    </button>
+                    
+                    <!-- Gallery thumbnails -->
+                    @foreach ($product->images as $image)
+                    <button @click="mainImage = '{{ asset('storage/' . $image->path) }}'" 
+                            class="aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200"
+                            :class="mainImage === '{{ asset('storage/' . $image->path) }}' ? 'border-black' : 'border-gray-200 hover:border-gray-400'">
+                        <img src="{{ asset('storage/' . $image->path) }}" 
+                             class="w-full h-full object-cover">
+                    </button>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="space-y-6">
+                <!-- Category & Title -->
+                <div class="space-y-3">
+                    <span class="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm font-medium rounded-full">
+                        {{ $product->category->name ?? 'N/A' }}
+                    </span>
+                    <h1 class="text-3xl lg:text-4xl font-bold text-black leading-tight">
+                        {{ $product->name }}
+                    </h1>
+                    <p class="text-2xl lg:text-3xl font-bold text-black">
+                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                    </p>
+                </div>
+
+                <!-- Description -->
+                <div class="space-y-3 py-6 border-t border-gray-100">
+                    <h2 class="font-semibold text-lg text-black">Deskripsi Produk</h2>
+                    <div class="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                        {{ $product->description }}
                     </div>
                 </div>
 
-                <!-- Kolom Detail & Aksi -->
-                <div class="p-6 sm:p-8 flex flex-col">
-                    <h1 class="text-3xl lg:text-4xl font-bold text-black leading-tight">{{ $product->name }}</h1>
-                    
-                    <!-- Info Kategori & Stok -->
-                    <div class="flex items-center flex-wrap gap-x-4 gap-y-2 mt-3 text-sm">
-                        <div class="text-gray-600 font-medium">
-                            <span>Kategori: {{ $product->category->name ?? 'N/A' }}</span>
-                        </div>
-                        <span class="text-gray-300 hidden sm:block">|</span>
-                        <div class="text-gray-600 font-medium">
-                            {{-- Menggunakan total_stock dari semua varian --}}
-                            <span>Total Stok: {{ $product->total_stock }}</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Deskripsi -->
-                    <div class="mt-6 pt-6 border-t">
-                        <h2 class="font-semibold text-lg mb-2 text-gray-800">Deskripsi Produk</h2>
-                        <p class="text-gray-600 text-base leading-relaxed whitespace-pre-wrap">{{ $product->description }}</p>
-                    </div>
+                <!-- Product Actions -->
+                <div class="pt-6 border-t border-gray-100">
+                    @php
+                        $isPortfolio = ($product->category && $product->category->slug === 'custom-personal-order');
+                    @endphp
 
-                    <!-- Bagian Aksi (INTEGRASI DENGAN SISTEM VARIAN) -->
-                    <div class="mt-auto pt-8">
-                        {{-- Form sekarang membungkus semua aksi --}}
-                        <form action="{{ route('cart.add', $product) }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="variant_id" x-model="selectedVariantId">
-
-                            <!-- Pilihan Ukuran -->
-                            <div class="mb-4">
-                                <h3 class="font-semibold text-gray-800 mb-2">Pilih Ukuran:</h3>
-                                @if ($product->variants->where('stock', '>', 0)->count() > 0)
-                                    <div class="flex flex-wrap gap-2">
-                                        @foreach ($product->variants as $variant)
-                                            <label class="cursor-pointer">
-                                                <input type="radio" name="variant_selector" value="{{ $variant->id }}" 
-                                                       x-model="selectedVariantId" 
-                                                       @change="selectedStock = {{ $variant->stock }}; quantity = 1"
-                                                       class="sr-only peer"
-                                                       {{ $variant->stock < 1 ? 'disabled' : '' }}>
-                                                <div class="px-4 py-2 border rounded-md peer-checked:bg-black peer-checked:text-white peer-checked:border-black peer-disabled:bg-gray-100 peer-disabled:text-gray-400 peer-disabled:cursor-not-allowed hover:border-black transition-colors">
-                                                    {{ $variant->size }}
-                                                </div>
-                                            </label>
-                                        @endforeach
-                                    </div>
-                                    <div class="text-xs text-gray-500 mt-2" x-show="selectedVariantId" x-cloak>Stok tersedia: <span x-text="selectedStock"></span></div>
-                                @else
-                                    <p class="text-red-500">Stok habis untuk semua ukuran.</p>
-                                @endif
-                            </div>
-                            
-                            <!-- Input Jumlah -->
-                            <div class="flex items-center mb-6" x-show="selectedVariantId && selectedStock > 0" x-cloak>
-                                <label for="quantity" class="font-semibold mr-4 text-gray-800">Jumlah:</label>
-                                <input type="number" id="quantity" name="quantity" x-model.number="quantity" @input="validateQuantity()" min="1" :max="selectedStock" class="w-20 border-gray-300 rounded-md text-center">
-                            </div>
-
-                            <!-- Harga -->
-                            <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-lg font-medium text-gray-700">Harga:</span>
-                                    <p class="text-3xl font-bold text-black">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+                    @if ($isPortfolio)
+                        <!-- Portfolio/Custom Product -->
+                        <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-info-circle text-gray-500 mt-0.5"></i>
+                                <div>
+                                    <p class="text-gray-700 font-medium mb-1">Produk Custom</p>
+                                    <p class="text-gray-600 text-sm leading-relaxed">
+                                        Ini adalah contoh produk custom. Tertarik? 
+                                        <a href="https://wa.me/6285136844527?text=Halo%20kak%20saya%20mau%20tanya%20tentang%20produk%20{{ $product->name }}" 
+                                           class="font-semibold text-black hover:underline">Hubungi kami!</a>
+                                    </p>
                                 </div>
                             </div>
+                        </div>
+                    @else
+                        <!-- Regular Product -->
+                        <div x-data="{ 
+                                selectedVariantId: null, 
+                                selectedStock: null, 
+                                quantity: 1,
+                                validateQuantity() {
+                                    if (isNaN(this.quantity) || this.quantity < 1) { this.quantity = 1; }
+                                    if (this.selectedStock !== null && this.quantity > this.selectedStock) { this.quantity = this.selectedStock; }
+                                }
+                            }" class="space-y-6">
+                            
+                            <form action="{{ route('cart.add', $product) }}" method="POST" class="space-y-6">
+                                @csrf
+                                <input type="hidden" name="variant_id" x-model="selectedVariantId">
 
-                            <!-- Tombol Aksi -->
-                            <div class="space-y-4">
-                                <button type="submit" 
-                                       :disabled="!selectedVariantId || selectedStock < 1 || quantity < 1"
-                                       class="w-full bg-black text-white font-semibold py-3 px-4 rounded-md hover:bg-gray-800 transition-colors shadow-sm flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                    <i class="fas fa-shopping-cart text-sm"></i>
-                                    <span x-show="!selectedVariantId">Pilih Ukuran</span>
-                                    <span x-show="selectedVariantId && selectedStock > 0">Tambah ke Keranjang</span>
-                                    <span x-show="selectedVariantId && selectedStock < 1">Stok Habis</span>
-                                </button>
+                                <!-- Size Selection -->
+                                <div class="space-y-3">
+                                    <h3 class="font-semibold text-black">Pilih Ukuran</h3>
+                                    @if ($product->variants->where('stock', '>', 0)->count() > 0)
+                                        <div class="grid grid-cols-4 gap-2">
+                                            @foreach ($product->variants as $variant)
+                                                <label class="cursor-pointer">
+                                                    <input type="radio" name="variant_selector" value="{{ $variant->id }}" 
+                                                           x-model="selectedVariantId" 
+                                                           @change="selectedStock = {{ $variant->stock }}; quantity = 1"
+                                                           class="sr-only peer"
+                                                           {{ $variant->stock < 1 ? 'disabled' : '' }}>
+                                                    <div class="h-12 flex items-center justify-center border border-gray-200 rounded-xl text-sm font-medium peer-checked:bg-black peer-checked:text-white peer-checked:border-black peer-disabled:bg-gray-100 peer-disabled:text-gray-400 peer-disabled:cursor-not-allowed hover:border-gray-400 transition-all duration-200">
+                                                        {{ $variant->size }}
+                                                    </div>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        <div class="text-sm text-gray-500" x-show="selectedVariantId" x-cloak>
+                                            Stok tersedia: <span x-text="selectedStock" class="font-medium"></span>
+                                        </div>
+                                    @else
+                                        <p class="text-sm text-red-500 bg-red-50 p-3 rounded-xl">
+                                            Stok habis untuk semua ukuran.
+                                        </p>
+                                    @endif
+                                </div>
                                 
-                                <button type="submit" 
-                                       formaction="{{ route('checkout.buyNow') }}"
-                                       :disabled="!selectedVariantId || selectedStock < 1 || quantity < 1"
-                                       class="w-full bg-white border border-gray-300 text-black font-semibold py-3 px-4 rounded-md hover:bg-gray-100 transition-colors shadow-sm flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                    <i class="fas fa-bolt text-sm"></i>
-                                    <span>Beli Sekarang</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                                <!-- Quantity Selection -->
+                                <div class="flex items-center gap-4" x-show="selectedVariantId && selectedStock > 0" x-cloak>
+                                    <label class="font-semibold text-black">Jumlah</label>
+                                    <input type="number" name="quantity" x-model.number="quantity" @input="validateQuantity()" 
+                                           min="1" :max="selectedStock" 
+                                           class="w-20 h-12 border border-gray-200 rounded-xl text-center font-medium focus:border-black focus:ring-0 focus:outline-none">
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="space-y-3">
+                                    <button type="submit" :disabled="!selectedVariantId || selectedStock < 1 || quantity < 1" 
+                                            class="w-full h-14 bg-black text-white font-semibold rounded-2xl hover:bg-gray-800 transition-all duration-200 shadow-sm flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                                        <i class="fas fa-shopping-cart text-sm"></i>
+                                        <span x-show="!selectedVariantId">Pilih Ukuran</span>
+                                        <span x-show="selectedVariantId && selectedStock > 0">Tambah ke Keranjang</span>
+                                        <span x-show="selectedVariantId && selectedStock < 1">Stok Habis</span>
+                                    </button>
+                                    
+                                    <button type="submit" formaction="{{ route('checkout.buyNow') }}" 
+                                            :disabled="!selectedVariantId || selectedStock < 1 || quantity < 1" 
+                                            class="w-full h-14 bg-white border border-gray-200 text-black font-semibold rounded-2xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
+                                        <i class="fas fa-bolt text-sm"></i>
+                                        <span>Beli Sekarang</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    @endif
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Reviews Section -->
+    <div class="border-t border-gray-100 bg-gray-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold text-black mb-8">Ulasan Pelanggan</h2>
+                
+                @if ($product->ratings->isNotEmpty())
+                    <!-- Rating Summary -->
+                    <div class="bg-white rounded-2xl p-6 mb-6">
+                        <div class="flex items-center gap-6 mb-6">
+                            <div class="text-4xl font-bold text-black">
+                                {{ number_format($product->ratings->avg('rating'), 1) }}
+                            </div>
+                            <div>
+                                <div class="flex items-center text-yellow-400 mb-1">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <i class="fas fa-star text-lg {{ $i <= round($product->ratings->avg('rating')) ? '' : 'text-gray-300' }}"></i>
+                                    @endfor
+                                </div>
+                                <p class="text-sm text-gray-500">
+                                    Berdasarkan {{ $product->ratings->count() }} ulasan
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reviews List -->
+                    <div class="space-y-4">
+                        @foreach ($product->ratings as $rating)
+                        <div class="bg-white rounded-2xl p-6">
+                            <div class="flex items-start gap-4">
+                                <img src="{{ 'https://ui-avatars.com/api/?name='.urlencode($rating->user->name).'&background=000000&color=ffffff&size=40' }}" 
+                                     class="w-10 h-10 rounded-full flex-shrink-0">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <p class="font-semibold text-black">{{ $rating->user->name }}</p>
+                                        <div class="flex items-center text-yellow-400">
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                <i class="fas fa-star text-sm {{ $i <= $rating->rating ? '' : 'text-gray-300' }}"></i>
+                                            @endfor
+                                        </div>
+                                    </div>
+                                    @if($rating->review)
+                                    <p class="text-gray-600 mb-2">{{ $rating->review }}</p>
+                                    @endif
+                                    <p class="text-xs text-gray-400">{{ $rating->created_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                @else
+                    <!-- No Reviews State -->
+                    <div class="bg-white rounded-2xl p-8 text-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-star text-gray-400 text-xl"></i>
+                        </div>
+                        <p class="text-gray-500 font-medium">Belum ada ulasan untuk produk ini</p>
+                        <p class="text-gray-400 text-sm mt-1">Jadilah yang pertama memberikan ulasan!</p>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
