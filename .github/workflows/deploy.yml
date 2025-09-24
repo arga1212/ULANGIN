@@ -1,0 +1,41 @@
+name: Deploy Laravel with Self-Hosted Runner CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install PHP dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Install Node dependencies & Build assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run Laravel commands
+        run: |
+          php artisan migrate --force
+          php artisan config:clear
+          php artisan cache:clear
+          php artisan route:clear
+          php artisan view:clear
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      - name: Set permissions
+        run: |
+          sudo chown -R www-data:www-data /var/www/toko-baju
+          sudo chmod -R 775 /var/www/toko-baju/storage /var/www/toko-baju/bootstrap/cache
+
+      - name: Restart PHP-FPM
+        run: sudo systemctl reload php8.2-fpm
