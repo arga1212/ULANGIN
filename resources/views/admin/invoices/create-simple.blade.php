@@ -8,6 +8,18 @@
         <p class="mt-1 text-sm text-gray-500">Buat pesanan untuk produk custom atau personal order.</p>
     </div>
 
+    {{-- Notifikasi Error Validasi --}}
+    @if ($errors->any())
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-r-lg shadow-sm" role="alert">
+            <p class="font-bold">Oops! Ada beberapa kesalahan:</p>
+            <ul class="mt-2 list-disc list-inside text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form action="{{ route('admin.invoices.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -17,10 +29,10 @@
                 <div class="bg-white rounded-xl shadow-lg border p-6">
                     <h2 class="text-xl font-semibold mb-4 text-gray-800">Informasi Pelanggan</h2>
                     <div class="space-y-4">
-                        <input type="text" name="customer_name" placeholder="Nama Pelanggan" class="w-full border-gray-300 rounded-md" value="{{ old('customer_name') }}" required>
-                        <input type="email" name="customer_email" placeholder="Email" class="w-full border-gray-300 rounded-md" value="{{ old('customer_email') }}" required>
-                        <input type="text" name="customer_phone" placeholder="Nomor Telepon" class="w-full border-gray-300 rounded-md" value="{{ old('customer_phone') }}" required>
-                        <textarea name="customer_address" placeholder="Alamat Lengkap" rows="3" class="w-full border-gray-300 rounded-md" required>{{ old('customer_address') }}</textarea>
+                        <input type="text" name="customer_name" placeholder="Nama Pelanggan" class="w-full border-gray-300 rounded-md shadow-sm focus:border-black focus:ring-black" value="{{ old('customer_name') }}" required>
+                        <input type="email" name="customer_email" placeholder="Email" class="w-full border-gray-300 rounded-md shadow-sm focus:border-black focus:ring-black" value="{{ old('customer_email') }}" required>
+                        <input type="text" name="customer_phone" placeholder="Nomor Telepon" class="w-full border-gray-300 rounded-md shadow-sm focus:border-black focus:ring-black" value="{{ old('customer_phone') }}" required>
+                        <textarea name="customer_address" placeholder="Alamat Lengkap" rows="3" class="w-full border-gray-300 rounded-md shadow-sm focus:border-black focus:ring-black" required>{{ old('customer_address') }}</textarea>
                     </div>
                 </div>
 
@@ -30,15 +42,15 @@
                     <div class="space-y-4">
                         <div>
                             <label class="text-sm font-medium">Nama Produk</label>
-                            <input type="text" name="product_name" class="mt-1 w-full border-gray-300 rounded-md" placeholder="e.g., Jaket Denim Custom 'Nama'" required>
+                            <input type="text" name="product_name" class="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:border-black focus:ring-black" placeholder="e.g., Jaket Denim Custom 'Nama'" value="{{ old('product_name') }}" required>
                         </div>
                         <div>
                             <label class="text-sm font-medium">Deskripsi Singkat</label>
-                            <textarea name="product_description" rows="3" class="mt-1 w-full border-gray-300 rounded-md" required></textarea>
+                            <textarea name="product_description" rows="3" class="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:border-black focus:ring-black" required>{{ old('product_description') }}</textarea>
                         </div>
                         <div>
                             <label class="text-sm font-medium">Harga Final (Total)</label>
-                            <input type="number" name="product_price" min="0" class="mt-1 w-full border-gray-300 rounded-md" placeholder="e.g., 250000" required>
+                            <input type="number" name="product_price" min="0" class="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:border-black focus:ring-black" placeholder="e.g., 250000" value="{{ old('product_price') }}" required>
                         </div>
                         <div>
                             <label class="text-sm font-medium">Gambar Produk (Untuk Portofolio)</label>

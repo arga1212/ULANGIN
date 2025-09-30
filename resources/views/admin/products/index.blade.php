@@ -37,7 +37,8 @@
                     @forelse ($products as $product)
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-16 h-16 object-cover rounded-md shadow-sm">
+                            {{-- --- PERBAIKAN UTAMA DI SINI --- --}}
+                            <img src="{{ asset('storage/' . $product->thumbnail) }}" alt="{{ $product->name }}" class="w-16 h-16 object-cover rounded-md shadow-sm">
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
                             {{ $product->name }}
