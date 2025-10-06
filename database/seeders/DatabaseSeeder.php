@@ -20,9 +20,10 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        // Tambahkan seeder kategori
+        // Jalankan beberapa seeder sekaligus
         $this->call([
             CategoriesTableSeeder::class,
+            VoucherSeeder::class,
         ]);
     }
 }

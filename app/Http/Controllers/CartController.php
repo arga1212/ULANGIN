@@ -46,7 +46,7 @@ class CartController extends Controller
             "size" => $variant->size,
             "quantity" => $newQty,
             "price" => $product->price,
-            "image" => $product->image
+            "image" => $product->thumbnail
         ];
         
         session()->put('cart', $cart);

@@ -46,6 +46,7 @@
                                 @if($order->status == 'process') bg-blue-100 text-blue-800 border border-blue-200 @endif
                                 @if($order->status == 'dikirim') bg-green-100 text-green-800 border border-green-200 @endif
                                 @if($order->status == 'done') bg-gray-100 text-gray-600 border border-gray-200 @endif
+                                @if($order->status == 'cancelled') bg-red-100 text-red-800 border border-red-200 @endif
                             ">{{ ucfirst($order->status) }}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right font-medium">

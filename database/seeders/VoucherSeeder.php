@@ -40,7 +40,7 @@ class VoucherSeeder extends Seeder
         foreach ($vouchers as $code) {
             Voucher::create([
                 'code' => $code,
-                'discount_percent' => 5, // Semua diskon 5%
+                'discount_percent' => 10, // Semua diskon 5%
                 'is_active' => true,
             ]);
         }

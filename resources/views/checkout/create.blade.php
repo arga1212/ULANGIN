@@ -116,7 +116,7 @@
             </div>
 
             {{-- Tombol ini sekarang akan men-submit form checkout utama --}}
-            <button type="submit" form="checkout-form" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded">
+            <button type="submit" form="checkout-form" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded">
                 Konfirmasi Pesanan
             </button>
         </div>

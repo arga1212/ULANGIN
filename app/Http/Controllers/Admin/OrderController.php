@@ -35,7 +35,7 @@ class OrderController extends Controller
     public function update(Request $request, Order $order)
     {
           $validated = $request->validate([
-        'status' => 'required|in:waiting,process,dikirim,done',
+        'status' => 'required|in:waiting,process,dikirim,done,cancelled',
         'shipping_receipt' => 'nullable|string|max:255', // Tambahkan validasi resi
     ]);
 

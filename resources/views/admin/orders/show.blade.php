@@ -79,6 +79,7 @@
                                 <option value="process" @selected($order->status == 'process')>Diproses</option>
                                 <option value="dikirim" @selected($order->status == 'dikirim')>Dikirim</option>
                                 <option value="done" @selected($order->status == 'done')>Selesai</option>
+                                <option value="cancelled" @selected($order->status == 'cancelled')>Dibatalkan</option>
                             </select>
                         </div>
                         <div>

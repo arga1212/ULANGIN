@@ -34,9 +34,9 @@
                 {{-- Input Persentase Diskon --}}
                 <div>
                     <label for="discount_percent" class="block text-sm font-medium text-gray-700 mb-1">Persentase Diskon (%)</label>
-                    <input type="number" name="discount_percent" id="discount_percent" value="{{ old('discount_percent', $voucher->discount_percent ?? '5') }}" 
+                    <input type="number" name="discount_percent" id="discount_percent" value="{{ old('discount_percent', $voucher->discount_percent ?? '10') }}" 
                            class="w-full border-gray-300 rounded-md shadow-sm focus:border-black focus:ring-black"
-                           placeholder="Contoh: 5">
+                           placeholder="Contoh: 10">
                 </div>
                 
                 {{-- Input Status --}}
