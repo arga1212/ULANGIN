@@ -19,6 +19,7 @@
                 @if($order->status == 'process') bg-blue-100 text-blue-800 border border-blue-200 @endif
                 @if($order->status == 'dikirim') bg-green-100 text-green-800 border border-green-200 @endif
                 @if($order->status == 'done') bg-gray-100 text-gray-600 border border-gray-200 @endif
+                @if($order->status == 'cancelled') bg-red-100 text-red-800 border border-red-200 @endif
             ">Status: {{ ucfirst($order->status) }}</span>
         </div>
     </div>
@@ -34,14 +35,44 @@
                 </div>
                 <div class="p-6">
                     <table class="w-full text-sm">
-                        {{-- ... (Isi tabel tidak berubah, sudah bagus) ... --}}
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-2 font-semibold text-gray-600">Produk</th>
+                                <th class="text-center py-2 font-semibold text-gray-600">Jumlah</th>
+                                <th class="text-right py-2 font-semibold text-gray-600">Harga Satuan</th>
+                                <th class="text-right py-2 font-semibold text-gray-600">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($order->items as $item)
+                            <tr class="border-b last:border-b-0">
+                                <td class="py-4">
+                                    <div class="flex items-center space-x-4">
+                                        {{-- Menggunakan $item->product->thumbnail --}}
+                                        <img src="{{ asset('storage/' . $item->product->thumbnail) }}" alt="{{ $item->product->name }}" class="w-16 h-16 object-cover rounded-md">
+                                        <div>
+                                            <p class="font-semibold text-gray-800">{{ $item->product->name }}</p>
+                                            <p class="text-xs text-gray-500">Ukuran: {{ $item->size }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center py-4">{{ $item->quantity }}</td>
+                                <td class="text-right py-4">Rp {{ number_format($item->price) }}</td>
+                                <td class="text-right py-4 font-semibold">Rp {{ number_format($item->price * $item->quantity) }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-center py-8 text-gray-500">Item pesanan tidak ditemukan.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
                         <tfoot class="text-right">
                             @php $subtotal = $order->items->sum(fn($item) => $item->price * $item->quantity); @endphp
-                            <tr class="font-semibold"><td colspan="3" class="py-2">Subtotal:</td><td class="py-2">Rp {{ number_format($subtotal) }}</td></tr>
+                            <tr class="font-semibold"><td colspan="3" class="py-2 border-t">Subtotal:</td><td class="py-2 border-t">Rp {{ number_format($subtotal) }}</td></tr>
                             @if ($order->voucher_code)
                                 <tr class="text-green-600"><td colspan="3" class="py-2">Diskon ({{ $order->voucher_code }}):</td><td class="py-2">- Rp {{ number_format($subtotal - $order->total_price) }}</td></tr>
                             @endif
-                            <tr class="font-bold text-xl border-t-2"><td colspan="3" class="pt-4">Total Akhir:</td><td class="pt-4">Rp {{ number_format($order->total_price) }}</td></tr>
+                            <tr class="font-bold text-xl"><td colspan="3" class="pt-4">Total Akhir:</td><td class="pt-4">Rp {{ number_format($order->total_price) }}</td></tr>
                         </tfoot>
                     </table>
                 </div>
